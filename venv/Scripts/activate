@@ -37,7 +37,7 @@ deactivate () {
 # unset irrelevant variables
 deactivate nondestructive
 
-VIRTUAL_ENV="C:\Users\qwerty\Documents\GitHub\FSM_Soda_machine\venv"
+VIRTUAL_ENV="C:\Users\qwerty\Documents\GitHub\Parallel\venv"
 export VIRTUAL_ENV
 
 _OLD_VIRTUAL_PATH="$PATH"
