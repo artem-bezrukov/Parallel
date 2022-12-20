@@ -4,22 +4,27 @@ class DB:
         self.conn = sqlite3.connect('DataBase.db')
         self.c = self.conn.cursor()
         self.c.execute(
-            '''CREATE TABLE IF NOT EXISTS DataBase (water integer, gas integer, lemon integer, cherry integer)''')
+            '''CREATE TABLE IF NOT EXISTS DataBase (
+            water integer, gas integer, lemon integer, cherry integer
+            )''')
         self.conn.commit()
-    def update(self):
-        print('1')
+        self.conn.close()
+    #def update(self):
+    #    print('1')
 
     def read_db(self):
+        self.conn = sqlite3.connect('DataBase.db')
+        self.c = self.conn.cursor()
         self.c.execute('''SELECT * FROM DataBase''')
-        records = self.DB.c.fetchall()
-        water = 1
-        gas = 3
-        cherry = 3
+        records = self.c.fetchall()
+        water = 0
+        gas = 0
+        cherry = 0
         lemon = 0
-        print(records)
         for column in records:
             water=column[0]
             gas=column[1]
-        print(water, gas, cherry, lemon)
-
+            cherry = column[2]
+            lemon = column[3]
         return {'water' : water, 'gas' : gas, 'cherry':cherry, 'lemon':lemon}
+        self.conn.close()

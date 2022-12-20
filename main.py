@@ -1,4 +1,5 @@
 import tkinter as tk
+from faulthandler import disable
 from tkinter import ttk
 from time import sleep
 import DataBase as DB
@@ -22,7 +23,7 @@ class Main(tk.Frame):
         self.master.geometry('250x400+900+500')
 
 
-    def initUI(self):
+    def initUI(self, disabled=None):
 
         self.columnconfigure([0, 1, 2, 3], weight=1, minsize=400, pad=3)
         self.rowconfigure([0, 1, 2, 3, 4], weight=1, minsize=250, pad=3)
@@ -56,11 +57,14 @@ class Main(tk.Frame):
         btn_money_10 = tk.Button(self.master, text='+10', command=self.add10_cash)
         btn_money_10.grid(row=11, column=1, sticky='w')
 
-        btn_go = tk.Button(self.master, text='Налить', command=self.fill_glass)
+        btn_go = tk.Button(self.master, text='Налить', command= lambda: self.fill_glass())
         btn_go.grid(row=12, column=1, sticky='')
 
         btn_get_change = tk.Button(self.master, text='Получить сдачу', command=self.get_change)
         btn_get_change.grid(row=13, column=1, sticky='s')
+
+        space_for_message = tk.Label(self.master, text='')
+        space_for_message.grid(row=6, column=1, sticky='sw')
 
     def add2_cash(self):
         self.cash += 2
@@ -91,27 +95,82 @@ class Main(tk.Frame):
             self.syrup_selected['no_syrup'] = False
             self.syrup_selected['cherry'] = False
             self.syrup_selected['lemon'] = True
-        if self.storage['water'] <= 0:
-            self.destroy()
+
     def get_data(self):
         self.storage = self.DB.read_db()
+
     def fill_glass(self):
         if (self.cash > 0):
-            color = ' '
             if (self.syrup_selected['no_syrup'] and self.cash >= self.price['no_syrup']):
-                color = '#FFEFD5'
-                self.cash -= self.price['no_syrup']
-                self.progress(color)
-                self.storage['water']--1
-                print(self.storage['water'])
+                if (self.cheak() == 1):
+                    color = '#FFEFD5'
+                    self.cash -= self.price['no_syrup']
+                    self.storage['water'] -= 2
+                    self.storage['gas'] -= 1
+                    self.progress(color)
             if (self.syrup_selected['lemon'] and self.cash >= self.price['lemon']):
-                color = 'yellow'
-                self.cash -= self.price['lemon']
-                self.progress(color)
+                if (self.cheak() == 1):
+                    color = 'yellow'
+                    self.cash -= self.price['lemon']
+                    self.storage['water'] -= 1
+                    self.storage['lemon'] -= 1
+                    self.storage['gas'] -= 1
+                    self.progress(color)
             if (self.syrup_selected['cherry'] and self.cash >= self.price['cherry']):
-                color = 'red'
-                self.cash -= self.price['cherry']
-                self.progress(color)
+                if (self.cheak() == 1):
+                    color = 'red'
+                    self.cash -= self.price['cherry']
+                    self.storage['water'] -= 1
+                    self.storage['cherry'] -= 1
+                    self.storage['gas'] -= 1
+                    self.progress(color)
+
+    def cheak(self):
+        if (self.storage['gas'] <= 0):
+            message = tk.Label(self.master, text='Не хватает газа')
+            message.grid(row=6, column=1, sticky='sw')
+            return 0
+        else:
+            if (self.storage['water'] <= 0):
+                message = tk.Label(self.master, text='Не хватает воды')
+                message.grid(row=6, column=1, sticky='sw')
+                return 0
+
+            else:
+                if (self.syrup_selected['cherry']):
+                    if (self.storage['cherry'] <= 0):
+                        message = tk.Label(self.master, text='Не хватает воды или вишневого сиропа')
+                        message.grid(row=6, column=1, sticky='sw')
+                        return 0
+                    else:
+                        message = tk.Label(self.master, text='')
+                        message.grid(row=6, column=1, sticky='sw')
+                        return 1
+
+                if (self.syrup_selected['lemon']):
+                    if (self.storage['lemon'] <= 0):
+                        message = tk.Label(self.master, text='Не хватает воды или ломонного сиропа')
+                        message.grid(row=6, column=1, sticky='sw')
+                        return 0
+                    else:
+                        message = tk.Label(self.master, text='')
+                        message.grid(row=6, column=1, sticky='sw')
+                        return 1
+
+                if (self.syrup_selected['no_syrup']):
+                    if (self.storage['water'] <= 1):
+                        message = tk.Label(self.master, text='Не хватает воды на полный стакан')
+                        message.grid(row=6, column=1, sticky='sw')
+                        return 0
+                    else:
+                        message = tk.Label(self.master, text='')
+                        message.grid(row=6, column=1, sticky='sw')
+                        return 1
+
+                else:
+                    message = tk.Label(self.master, text='Ничего не выбрано')
+                    message.grid(row=6, column=1, sticky='sw')
+                    return 0
 
     def progress(self, color):
         s = ttk.Style()
